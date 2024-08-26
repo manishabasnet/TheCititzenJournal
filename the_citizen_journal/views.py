@@ -1,10 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.http import JsonResponse
 from pymongo import MongoClient
 from .serializers import UserSerializer
 import urllib.parse
 from dotenv import load_dotenv
 import os
+import json
+import bcrypt
 
 load_dotenv()
 
@@ -29,3 +32,35 @@ class UserListView(APIView):
         serializer = UserSerializer(data, many=True)
         # Return the data as JSON response
         return Response(serializer.data)
+
+class UserSignupView(APIView):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            name = data.get('name')
+            email = data.get('email')
+            password = data.get('password')
+
+            # Validate input data
+            if not name or not email or not password:
+                return JsonResponse({'error': 'Missing fields'}, status=400)
+            
+            # Check if user already exists
+            if collection.find_one({'email': email}):
+                return JsonResponse({'error': 'User already exists'}, status=400)
+
+            # Hash the password before storing it
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+            # Insert the new user into the MongoDB collection
+            user = {
+                'name': name,
+                'email': email,
+                'password': hashed_password, 
+            }
+            collection.insert_one(user)
+
+            return JsonResponse({'message': 'User signed up successfully!'}, status=201)
+        
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)

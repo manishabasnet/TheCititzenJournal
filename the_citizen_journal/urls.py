@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import UserListView
+from .views import UserListView, UserSignupView
+from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,)
 
 urlpatterns = [
     path('api/users/', UserListView.as_view(), name='user_list'),
-    # Add other URL patterns here if needed
+    path('api/signup/', UserSignupView.as_view(), name='signup'),
 ]
