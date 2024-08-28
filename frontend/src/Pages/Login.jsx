@@ -12,7 +12,7 @@ function Login() {
     e.preventDefault();
     try {
       // Make a POST request to the login endpoint
-      const response = await axios.post('http://localhost:8000/api/login/', {
+      const response = await axios.post('http://127.0.0.1:8000/api/login/', {
         email,
         password,
       }, {
@@ -25,7 +25,7 @@ function Login() {
       localStorage.setItem('access_token', response.data.access);
 
       // Redirect to the home page after login
-      navigate('/home'); // Redirect to the home page after login
+      navigate('/artifacts'); // Redirect to the home page after login
     } catch (error) {
       console.error('There was an error logging in!', error);
     }
