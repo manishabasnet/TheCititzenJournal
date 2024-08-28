@@ -1,18 +1,24 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import JsonResponse
+from rest_framework import status
 from pymongo import MongoClient
 from .serializers import UserSerializer
 import urllib.parse
 from dotenv import load_dotenv
+import jwt
+from datetime import datetime, timedelta, timezone
+from django.conf import settings
 import os
 import json
 import bcrypt
+from rest_framework.permissions import IsAuthenticated
 
 load_dotenv()
 
 username = os.getenv('username')
 password = os.getenv('password')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # URL encode the username and password
 encoded_username = urllib.parse.quote_plus(username)
@@ -64,3 +70,31 @@ class UserSignupView(APIView):
         
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+        
+class UserLoginView(APIView):
+    def create_jwt(self, user):
+        payload = {
+            'user_id': str(user['_id']),
+            'email': user['email'],
+            'exp': datetime.now(tz=timezone.utc) + timedelta(hours=1),
+            'iat': datetime.now(tz=timezone.utc),
+        }
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        print(token)
+        return token
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        # Fetch user from MongoDB
+        user = collection.find_one({'email': email})
+        if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            # Authentication successful, manually create JWT
+            access_token = self.create_jwt(user)
+            return Response({
+                'access': access_token,
+                #TODO: Implement and return a refresh token similarly if needed
+            })
+        else:
+            return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
