@@ -14,6 +14,8 @@ import bcrypt
 from rest_framework.permissions import AllowAny
 from .authentication import CustomJWTAuthentication, CustomJWTCreate
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.files.storage import default_storage
 
 load_dotenv()
 
@@ -87,27 +89,28 @@ class ArtifactCollectionView(APIView):
 class AddArtifact(APIView):
     authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
-    def post(self, request):
-        token = request.headers.get('Authorization')
-        token = token.split(' ')[1]
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-
+    def post(self, request, *args, **kwargs):
         try:
-            data = json.loads(request.body)
-            title = data.get('title')
-            description = data.get('description')
+            title = request.data.get('title')
+            description = request.data.get('description')
+            files = request.FILES.getlist('images')
+
+            file_urls = []
+            for file in files:
+                # Save file to default storage
+                file_name = default_storage.save(file.name, file)
+                file_url = default_storage.url(file_name)
+                file_urls.append(file_url)
 
             artifact = {
                 'title': title,
                 'description': description,
+                'images': file_urls
             }
             artifact_collection.insert_one(artifact)
             return JsonResponse({'message': 'Artifact added successfully!'}, status=201)
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-  
-    
-
-        
+            return JsonResponse({'error': str(e)}, status=500)    
