@@ -27,7 +27,7 @@ function Login() {
       // Redirect to the home page after login
       navigate('/artifacts'); // Redirect to the home page after login
     } catch (error) {
-      console.error('There was an error logging in!', error);
+      console.error('Invalid Credential. Check your email address and password', error);
     }
   };
 

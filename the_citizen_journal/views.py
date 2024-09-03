@@ -7,11 +7,12 @@ from .serializers import UserSerializer, ArtifactSerializer
 import urllib.parse
 from dotenv import load_dotenv
 import jwt
-from datetime import datetime, timedelta, timezone
 from django.conf import settings
 import os
 import json
 import bcrypt
+from rest_framework.permissions import AllowAny
+from .authentication import CustomJWTAuthentication, CustomJWTCreate
 from rest_framework.permissions import IsAuthenticated
 
 load_dotenv()
@@ -31,16 +32,8 @@ db = client['CitizenJournal']
 user_collection = db['Users']
 artifact_collection = db['Artifacts']
 
-class UserListView(APIView):
-    def get(self, request):
-        # Fetch data from MongoDB
-        data = list(user_collection.find())
-        # Serialize the data
-        serializer = UserSerializer(data, many=True)
-        # Return the data as JSON response
-        return Response(serializer.data)
-
 class UserSignupView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -48,18 +41,14 @@ class UserSignupView(APIView):
             email = data.get('email')
             password = data.get('password')
 
-            # Validate input data
             if not name or not email or not password:
                 return JsonResponse({'error': 'Missing fields'}, status=400)
             
-            # Check if user already exists
             if user_collection.find_one({'email': email}):
                 return JsonResponse({'error': 'User already exists'}, status=400)
 
-            # Hash the password before storing it
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-            # Insert the new user into the MongoDB collection
             user = {
                 'name': name,
                 'email': email,
@@ -73,44 +62,37 @@ class UserSignupView(APIView):
             return JsonResponse({'error': str(e)}, status=500)
         
 class UserLoginView(APIView):
-    def create_jwt(self, user):
-        payload = {
-            'user_id': str(user['_id']),
-            'email': user['email'],
-            'exp': datetime.now(tz=timezone.utc) + timedelta(hours=1),
-            'iat': datetime.now(tz=timezone.utc),
-        }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        print(token)
-        return token
-
+    permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
 
-        # Fetch user from MongoDB
         user = user_collection.find_one({'email': email})
         if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-            # Authentication successful, manually create JWT
-            access_token = self.create_jwt(user)
+            access_token = CustomJWTCreate.create_jwt(self, user)
             return Response({
                 'access': access_token,
-                #TODO: Implement and return a refresh token similarly if needed
             })
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class ArtifactCollectionView(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        # Fetch data from MongoDB
         artifacts = list(artifact_collection.find())
-        # Serialize the data
         serializer = ArtifactSerializer(artifacts, many=True)
-        # Return the data as JSON response
         return Response(serializer.data)
     
-class AddArtifacts(APIView):
+class AddArtifact(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
+        token = request.headers.get('Authorization')
+        token = token.split(' ')[1]
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+
         try:
             data = json.loads(request.body)
             title = data.get('title')
@@ -121,7 +103,7 @@ class AddArtifacts(APIView):
                 'description': description,
             }
             artifact_collection.insert_one(artifact)
-            return JsonResponse({'message': 'User signed up successfully!'}, status=201)
+            return JsonResponse({'message': 'Artifact added successfully!'}, status=201)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)

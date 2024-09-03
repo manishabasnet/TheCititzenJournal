@@ -7,18 +7,25 @@ function AddArtifacts() {
   const [owner, setOwner] = useState('');
   const [upvotes, setUpvotes] = useState(0);
 
+  const token = localStorage.getItem('access_token');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/addartifacts/', {
+      const response = await axios.post('http://localhost:8000/api/addartifact/', {
         title,
         description,
-      });
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+         }
+        });
       console.log(response.data);
       setTitle('');
       setDescription('');
     } catch (error) {
-      console.error('There was an error in submission', error);
+      console.error('Artifact addition was unsuccessful', error);
     }
   };
 
