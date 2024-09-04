@@ -18,7 +18,6 @@ class CustomJWTCreate:
             'iat': datetime.now(tz=timezone.utc),
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-        print("token:",token)
         return token
 
 class CustomUser:

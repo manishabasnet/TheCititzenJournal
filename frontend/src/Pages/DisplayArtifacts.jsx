@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import ArtifactPost from '../Components/ArtifactPost';
 
 function DisplayArtifacts() {
     const [artifacts, setArtifacts] = useState([]);
@@ -22,6 +23,7 @@ function DisplayArtifacts() {
         })
         .then(response => {
             setArtifacts(response.data);
+            console.log(response.data);
         })
         .catch(err => {
             if (err.response && err.response.status === 403) {
@@ -37,9 +39,9 @@ function DisplayArtifacts() {
             {error && <p>{error}</p>}
             {artifacts.length === 0 && !error && <p>Loading artifacts...</p>}
             {artifacts.map((artifact) => (
-                <div key={artifact._id}>
+                <ArtifactPost key={artifact._id} artifact={artifact}>
                     {artifact.title}
-                </div>
+                </ArtifactPost>
             ))}
         </div>
     );

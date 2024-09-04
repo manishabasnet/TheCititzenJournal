@@ -16,6 +16,8 @@ from .authentication import CustomJWTAuthentication, CustomJWTCreate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.core.files.storage import default_storage
+from django.utils import timezone
+
 
 load_dotenv()
 
@@ -72,8 +74,10 @@ class UserLoginView(APIView):
         user = user_collection.find_one({'email': email})
         if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
             access_token = CustomJWTCreate.create_jwt(self, user)
+            username = user.get('name')
             return Response({
                 'access': access_token,
+                'username': username,
             })
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -95,6 +99,7 @@ class AddArtifact(APIView):
         try:
             title = request.data.get('title')
             description = request.data.get('description')
+            owner = request.data.get('owner')
             files = request.FILES.getlist('images')
 
             file_urls = []
@@ -103,11 +108,13 @@ class AddArtifact(APIView):
                 file_name = default_storage.save(file.name, file)
                 file_url = default_storage.url(file_name)
                 file_urls.append(file_url)
-
+        
             artifact = {
                 'title': title,
                 'description': description,
-                'images': file_urls
+                'images': file_urls,
+                'owner' : owner,
+                'timestamp': timezone.now()
             }
             artifact_collection.insert_one(artifact)
             return JsonResponse({'message': 'Artifact added successfully!'}, status=201)

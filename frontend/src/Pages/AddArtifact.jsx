@@ -18,6 +18,7 @@ function AddArtifacts() {
       const formData = new FormData();
       formData.append('title', title);
       formData.append('description', description);
+      formData.append('owner', localStorage.getItem('username'));
       images.forEach((image, index) => {
         formData.append(`images`, image);
       });

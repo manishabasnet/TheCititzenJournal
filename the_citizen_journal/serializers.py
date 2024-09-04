@@ -9,6 +9,10 @@ class ArtifactSerializer(serializers.Serializer):
     _id = serializers.SerializerMethodField()
     title = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=200)
+    owner = serializers.CharField(max_length=200)
+    images = serializers.ListField(child=serializers.CharField(max_length=200), required=False)
+    timestamp = serializers.DateTimeField()
+
 
     def get__id(self, obj):
         # obj is a dict, so use _id as key

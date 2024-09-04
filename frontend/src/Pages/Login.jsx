@@ -23,9 +23,9 @@ function Login() {
 
       // Save tokens to localStorage
       localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('username', response.data.username);
 
-      // Redirect to the home page after login
-      navigate('/artifacts'); // Redirect to the home page after login
+      navigate('/artifacts'); 
     } catch (error) {
       console.error('Invalid Credential. Check your email address and password', error);
     }
