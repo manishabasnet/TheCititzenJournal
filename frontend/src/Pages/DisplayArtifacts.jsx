@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ArtifactPost from '../Components/ArtifactPost';
+import styles from "./DisplayArtifacts.module.css"
 
 function DisplayArtifacts() {
     const [artifacts, setArtifacts] = useState([]);
@@ -35,7 +36,7 @@ function DisplayArtifacts() {
     }, [token, navigate]);
 
     return (
-        <div>
+        <div className={styles.artifactDescription}>
             {error && <p>{error}</p>}
             {artifacts.length === 0 && !error && <p>Loading artifacts...</p>}
             {artifacts.map((artifact) => (

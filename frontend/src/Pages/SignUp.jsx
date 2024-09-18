@@ -28,7 +28,6 @@ function Signup() {
 
   return (
     <div className={signupstyles.formcontainer}>
-        <div className={signupstyles.welcomemessage}><h1> Welcome to The Citizen Journal</h1></div>
         <form onSubmit={handleSubmit} className={signupstyles.form}>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" required />
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />

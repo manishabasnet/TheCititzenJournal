@@ -13,7 +13,6 @@ class ArtifactSerializer(serializers.Serializer):
     images = serializers.ListField(child=serializers.CharField(max_length=200), required=False)
     timestamp = serializers.DateTimeField()
 
-
     def get__id(self, obj):
         # obj is a dict, so use _id as key
         return str(obj.get('_id'))

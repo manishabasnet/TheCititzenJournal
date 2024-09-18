@@ -32,6 +32,7 @@ function Login() {
   };
 
   return (
+    <div className = {loginstyles.wholeForm}> 
     <form onSubmit={handleSubmit} className={loginstyles.form}>
       <input
         type="email"
@@ -49,6 +50,8 @@ function Login() {
       />
       <button className={loginstyles.button} type="submit">Login</button>
     </form>
+
+    </div>
   );
 }
 
