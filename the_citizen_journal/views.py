@@ -128,10 +128,8 @@ class AddArtifact(APIView):
             return JsonResponse({'error': str(e)}, status=500)    
 
 class UpdateLikes(APIView):
-    # authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    # parser_classes = [MultiPartParser, FormParser]
-    permission_classes = [AllowAny]
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         try:
