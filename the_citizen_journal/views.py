@@ -167,7 +167,6 @@ class AddComment(APIView):
     # permission_classes = [IsAuthenticated]
     permission_classes = [AllowAny]
 
-
     def post(self, request, *args, **kwargs):
         try:
             user_id = ObjectId(request.data.get("user_id"))
