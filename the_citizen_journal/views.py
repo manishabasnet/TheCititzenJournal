@@ -119,7 +119,8 @@ class AddArtifact(APIView):
                 'images': file_urls,
                 'owner' : owner,
                 'timestamp': timezone.now(),
-                'likes': []
+                'likes': [],
+                "comments": []
             }
             artifact_collection.insert_one(artifact)
             return JsonResponse({'message': 'Artifact added successfully!'}, status=201)
@@ -160,3 +161,43 @@ class UpdateLikes(APIView):
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
+        
+class AddComment(APIView):
+    # authentication_classes = [CustomJWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user_id = ObjectId(request.data.get("user_id"))
+            artifact_id = ObjectId(request.data.get("artifact_id"))
+            comment_text = request.data.get("comment")
+
+            if not comment_text:
+                return Response({"error": "Comment text is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            artifact = artifact_collection.find_one({"_id": artifact_id})
+
+            if not artifact:
+                return Response({"error": "Artifact not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            new_comment = {
+                "user": user_id,
+                "text": comment_text,
+                "timestamp": timezone.now()
+            }
+
+            artifact_collection.update_one(
+                {"_id": artifact_id}, 
+                {"$push": {"comments": new_comment}}
+            )
+
+            return Response({
+                "message": "Comment added successfully",
+                "artifact_id": str(artifact_id),
+                "user_id": str(user_id)
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

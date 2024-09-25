@@ -5,6 +5,10 @@ from bson import ObjectId
 class ObjectIdField(serializers.Field):
     def to_representation(self, value):
         return str(value)
+class CommentSerializer(serializers.Serializer):
+    user = ObjectIdField()
+    text = serializers.CharField()
+    timestamp = serializers.DateTimeField()
 class UserSerializer(serializers.Serializer):
     _id = ObjectIdField()
     name = serializers.CharField(max_length=100)
@@ -22,6 +26,7 @@ class ArtifactSerializer(serializers.Serializer):
     images = serializers.ListField(child=serializers.CharField(max_length=200), required=False)
     timestamp = serializers.DateTimeField()
     likes = serializers.ListField(child=ObjectIdField())
+    comments = CommentSerializer(many=True)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserSignupView, UserLoginView, ArtifactCollectionView, AddArtifact, UpdateLikes
+from .views import UserSignupView, UserLoginView, ArtifactCollectionView, AddArtifact, UpdateLikes, AddComment
 
 urlpatterns = [
     path('api/signup/', UserSignupView.as_view(), name='signup'),
@@ -7,4 +7,5 @@ urlpatterns = [
     path('api/artifacts/', ArtifactCollectionView.as_view(), name='artifacts'),
     path('api/addartifact/', AddArtifact.as_view(), name='addartifact'),
     path('api/updatelikes/', UpdateLikes.as_view(), name='updatelike'),
+    path('api/addcomment/', AddComment.as_view(), name='adcomment'),
 ]
