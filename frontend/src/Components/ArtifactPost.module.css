@@ -75,12 +75,32 @@ body {
     }
 }
 
-.heart-button{
+.interactionContainer {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5vh;
+}
+
+.likebox, .commentbox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.heart-button, .comment-button {
     background: transparent;
-    /* border: solid black 3px;  */
-    padding: 0; 
+    border: none;
+    padding: 5px;
     cursor: pointer;
     outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.heart-button svg, .comment-button svg {
+    width: 20px;
+    height: 20px;
 }
 
 .heart-button.liked {

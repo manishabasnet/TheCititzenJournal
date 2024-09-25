@@ -7,5 +7,5 @@ urlpatterns = [
     path('api/artifacts/', ArtifactCollectionView.as_view(), name='artifacts'),
     path('api/addartifact/', AddArtifact.as_view(), name='addartifact'),
     path('api/updatelikes/', UpdateLikes.as_view(), name='updatelike'),
-    path('api/addcomment/', AddComment.as_view(), name='adcomment'),
+    path('api/addcomment/', AddComment.as_view(), name='addcomment'),
 ]

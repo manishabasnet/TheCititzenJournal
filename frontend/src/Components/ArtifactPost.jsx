@@ -3,6 +3,7 @@ import axios from 'axios';
 import {useState} from "react"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import AddComment from "./AddComment.jsx";
 
 
 const ArtifactPost = ({ artifact }) => {
@@ -13,11 +14,13 @@ const ArtifactPost = ({ artifact }) => {
         return artifact.likes.includes(user_id);
     };
     const [showAllImages, setShowAllImages] = useState(false);
-    const [liked, setLiked] = useState(hasUserLiked())
-    const [likes, setLikes] = useState(artifact.likes.length)
-
+    const [liked, setLiked] = useState(hasUserLiked());
+    const [likes, setLikes] = useState(artifact.likes.length);
+    const [showCommentBox, setShowCommentBox] = useState(false);
+    const [comments, setComments] = useState(artifact.comments.length);
 
     const handleLikes = async (e) => {
+        e.stopPropagation(); // Prevent post click event
         if (liked) {
             setLikes(likes-1)
         }
@@ -27,7 +30,7 @@ const ArtifactPost = ({ artifact }) => {
         setLiked(!liked)   
 
         try {
-            // Make a POST request to the login endpoint
+            // Make a POST request to the likes endpoint
             const response = await axios.post('http://127.0.0.1:8000/api/updatelikes/', {
               user_id,
               "artifact_id": artifact._id,
@@ -40,6 +43,15 @@ const ArtifactPost = ({ artifact }) => {
           } catch (error) {
             console.error('Couldnt update like count', error);
           }
+    };
+
+    const handleComment = async (e) => {
+        e.stopPropagation(); // Prevent post click event
+        setShowCommentBox(!showCommentBox);
+    }
+
+    const updateCommentCount = () => {
+        setComments(comments + 1);
     };
 
     const currTime = new Date();
@@ -77,12 +89,28 @@ const ArtifactPost = ({ artifact }) => {
                 </div>
             )}
 
-            <div className = {styles.likebox}>
-                <button className={`${styles["heart-button"]} ${liked ? styles["liked"] : ''}`} onClick={handleLikes}>
-                    <FontAwesomeIcon icon={faHeart} />
-                </button>
-                <p> {likes}</p>
-             </div>
+            <div className={styles.interactionContainer}>
+                <div className = {styles.likebox}>
+                    <button className={`${styles["heart-button"]} ${liked ? styles["liked"] : ''}`} onClick={handleLikes}>
+                        <FontAwesomeIcon icon={faHeart} />
+                    </button>
+                    <p> {likes}</p>
+                </div>
+
+                <div className = {styles.commentbox}>
+                    <button className={styles["comment-button"]} onClick={handleComment}>
+                        <FontAwesomeIcon icon={faComment} />
+                    </button>
+                    <p> {artifact.comments.length} </p>
+                </div>
+            </div>
+
+             {showCommentBox && (
+                <AddComment 
+                    artifact = {artifact}
+                    updateCounts = {updateCommentCount}
+                />
+            )}
 
         </div>
     );

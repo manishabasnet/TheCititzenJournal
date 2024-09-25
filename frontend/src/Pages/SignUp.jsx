@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import signupstyles from './SignUp.module.css'
+import { Navigate, useNavigate } from 'react-router-dom';
 
 function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +23,7 @@ function Signup() {
       setEmail('');
       setPassword('');
       //Can redirect to login or show a success message here
+      navigate('/login'); 
     } catch (error) {
       console.error('There was an error signing up!', error);
     }
