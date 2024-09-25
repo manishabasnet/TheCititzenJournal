@@ -23,6 +23,7 @@ function Login() {
 
       // Save tokens to localStorage
       localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('user_id', response.data.user_id)
       localStorage.setItem('username', response.data.username);
 
       navigate('/artifacts'); 

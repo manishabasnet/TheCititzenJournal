@@ -5,6 +5,7 @@ import os
 import jwt
 import logging
 from dotenv import load_dotenv
+from bson import ObjectId
 
 load_dotenv()
 

@@ -17,6 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.core.files.storage import default_storage
 from django.utils import timezone
+from bson import ObjectId
 
 
 load_dotenv()
@@ -75,9 +76,12 @@ class UserLoginView(APIView):
         if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
             access_token = CustomJWTCreate.create_jwt(self, user)
             username = user.get('name')
+            user_id = str(user.get("_id"))
+            print(user_id)
             return Response({
                 'access': access_token,
                 'username': username,
+                'user_id': user_id,
             })
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -114,10 +118,47 @@ class AddArtifact(APIView):
                 'description': description,
                 'images': file_urls,
                 'owner' : owner,
-                'timestamp': timezone.now()
+                'timestamp': timezone.now(),
+                'likes': []
             }
             artifact_collection.insert_one(artifact)
             return JsonResponse({'message': 'Artifact added successfully!'}, status=201)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)    
+
+class UpdateLikes(APIView):
+    # authentication_classes = [CustomJWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user_id = ObjectId(request.data.get("user_id"))
+            artifact_id = ObjectId(request.data.get("artifact_id"))
+            print(user_id, artifact_id)
+            print(type(user_id))
+            artifact = artifact_collection.find_one({"_id": artifact_id})
+
+            if not artifact:
+                return JsonResponse({"error": "Artifact not found"}, status=404)
+
+            # Check if the user_id exists in the artifact's likes
+            if user_id in artifact['likes']:
+                artifact_collection.update_one(
+                    {"_id": artifact_id}, 
+                    {"$pull": {"likes": user_id}}
+                )
+                action = "removed"
+            else:
+                artifact_collection.update_one(
+                    {"_id": artifact_id}, 
+                    {"$addToSet": {"likes": user_id}}  # $addToSet ensures no duplicates
+                )
+                action = "added"
+
+            return JsonResponse({"message": f"Like {action} successfully", "artifact_id": str(artifact_id), "user_id": str(user_id)})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
